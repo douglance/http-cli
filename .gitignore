@@ -1,0 +1,73 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build output
+dist
+dist-ssr
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.*
+!.env.example
+!.example/.env
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Test files
+*.http
+*.rest
+!example.http
+!example.rest
+!.example/*.http
+!.example/*.rest
+
+# Development servers
+test-server.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage
+*.lcov
+
+# Temporary files
+*.tmp
+*.temp
+.cache
+
+# Lock files (optional - uncomment if you want to ignore)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Executables (built with bun)
+http-cli
+http-cli.map
+rest
+requests
+
+# Claude local settings
+.claude/settings.local.json

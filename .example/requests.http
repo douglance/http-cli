@@ -1,0 +1,115 @@
+### Get All Users
+GET https://jsonplaceholder.typicode.com/users
+Accept: application/json
+
+### Get Single User
+GET https://jsonplaceholder.typicode.com/users/2
+Accept: application/json
+
+### Get User Posts
+GET https://jsonplaceholder.typicode.com/posts?userId=1
+Accept: application/json
+
+### Create New Post
+POST https://jsonplaceholder.typicode.com/posts
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Test Post from HTTP Inspector",
+  "body": "This is a test post created via .http file",
+  "userId": 1
+}
+
+### Update Post
+PUT https://jsonplaceholder.typicode.com/posts/1
+Content-Type: application/json
+Accept: application/json
+
+{
+  "id": 1,
+  "title": "Updated Post Title",
+  "body": "Updated post body content",
+  "userId": 1
+}
+
+### Patch Post
+PATCH https://jsonplaceholder.typicode.com/posts/1
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Partially Updated Title"
+}
+
+### Delete Post
+DELETE https://jsonplaceholder.typicode.com/posts/1
+Accept: application/json
+
+### HTTPBin GET with Query Params
+GET https://httpbin.org/get?test=value&foo=bar
+Accept: application/json
+User-Agent: HTTP-Inspector/1.0
+
+### HTTPBin POST JSON
+POST https://httpbin.org/post
+Content-Type: application/json
+Accept: application/json
+
+{
+  "message": "Hello from HTTP Inspector",
+  "timestamp": "2025-10-10T20:00:00Z",
+  "data": {
+    "nested": "value"
+  }
+}
+
+### HTTPBin Headers Test
+GET https://httpbin.org/headers
+Accept: application/json
+X-Custom-Header: CustomValue
+X-Test-Header: TestValue
+
+### ENV Variables Test (uses .env files)
+POST {{API_BASE_URL}}/users/{{USER_ID}}
+Content-Type: {{CONTENT_TYPE}}
+Authorization: Bearer {{AUTH_TOKEN}}
+User-Agent: {{USER_AGENT}}
+
+{
+  "apiKey": "{{API_KEY}}",
+  "secret": "{{API_SECRET}}",
+  "userId": "{{USER_ID}}"
+}
+
+### Get Comments
+GET https://jsonplaceholder.typicode.com/comments?postId=1
+Accept: application/json
+
+### Create Todo
+POST https://jsonplaceholder.typicode.com/todos
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Test Todo Item",
+  "completed": false,
+  "userId": 1
+}
+
+### Get Albums
+GET https://jsonplaceholder.typicode.com/albums
+Accept: application/json
+
+### HTTPBin Delay Test (2 second delay)
+GET https://httpbin.org/delay/2
+Accept: application/json
+
+### HTTPBin Status Code Test
+GET https://httpbin.org/status/200
+Accept: application/json
+
+### HTTPBin User Agent
+GET https://httpbin.org/user-agent
+Accept: application/json
+User-Agent: HTTP-Inspector-TUI/1.0.0
