@@ -21,6 +21,17 @@ let mouseDisabled = false;
 
 export function setMouseDisabled(disabled: boolean): void {
   mouseDisabled = disabled;
+
+  // Actually disable/enable mouse tracking at the terminal level
+  if (disabled) {
+    // Disable mouse tracking
+    process.stdout.write("\x1b[?1000l");
+    process.stdout.write("\x1b[?1006l");
+  } else {
+    // Re-enable mouse tracking
+    process.stdout.write("\x1b[?1000h");
+    process.stdout.write("\x1b[?1006h");
+  }
 }
 
 /**
