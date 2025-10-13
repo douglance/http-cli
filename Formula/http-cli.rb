@@ -1,33 +1,30 @@
 class HttpCli < Formula
-  desc "Terminal-based HTTP client with .http file support"
+  desc "Fast, secure HTTP client for .http/.rest files"
   homepage "https://github.com/douglance/http-cli"
-  url "https://github.com/douglance/http-cli/archive/refs/tags/v1.0.0.tar.gz"
-  sha256 "SHA256_PLACEHOLDER"
+  version "0.1.0"
   license "MIT"
 
-  depends_on "node"
+  on_macos do
+    if Hardware::CPU.arm?
+      url "https://github.com/douglance/http-cli/releases/download/v0.1.0/http-macos-arm64"
+      sha256 "73f868bd809c016fe201974cee4ef291207c91b038d9a222239808c4e2b2d679"
+    else
+      url "https://github.com/douglance/http-cli/releases/download/v0.1.0/http-macos-x64"
+      sha256 "610574f17ef2def545e8e1c30b36968d1d61674a8e3b0cf74d715fd514650243"
+    end
+  end
+
+  on_linux do
+    url "https://github.com/douglance/http-cli/releases/download/v0.1.0/http-linux-x64"
+    sha256 "81cf1138a2b2a019ba615158fc0196f2f6259cbe412f0e592d8f8ffab1a4f6ff"
+  end
 
   def install
-    # Install dependencies
-    system "npm", "install", "--production"
-
-    # Build the project
-    system "npm", "run", "build"
-
-    # Install to libexec
-    libexec.install Dir["*"]
-
-    # Create binaries
-    bin.install_symlink libexec/"dist/cli.js" => "http"
-    bin.install_symlink libexec/"dist/cli.js" => "rest"
-    bin.install_symlink libexec/"dist/cli.js" => "requests"
+    bin.install Dir["http*"].first => "http-cli"
   end
 
   test do
-    # Test help command
-    assert_match "http - Terminal-based HTTP client", shell_output("#{bin}/http --help")
-
-    # Test version (if we add a version flag)
-    # assert_match "1.0.0", shell_output("#{bin}/http --version")
+    output = shell_output("#{bin}/http-cli --help")
+    assert_match "http", output
   end
 end
