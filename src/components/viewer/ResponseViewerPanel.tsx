@@ -15,10 +15,11 @@ interface ResponseViewerPanelProps {
   focused: boolean;
   isVerbose: boolean;
   height: number;
+  yOffset?: number; // absolute top y of this panel
 }
 
 export const ResponseViewerPanel = React.memo(
-  function ResponseViewerPanel({ focused, isVerbose, height }: ResponseViewerPanelProps) {
+  function ResponseViewerPanel({ focused, isVerbose, height, yOffset = 0 }: ResponseViewerPanelProps) {
     const { response, networkEvents, isLoading } = useRequestStore(
       useShallow((s) => ({
         response: s.response,
@@ -66,7 +67,7 @@ export const ResponseViewerPanel = React.memo(
 
     // Mouse click to focus
     useMouse((event) => {
-      const { x, leftClick } = event;
+      const { x, y, leftClick } = event;
 
       if (!leftClick || !stdout) {
         return;
@@ -78,8 +79,11 @@ export const ResponseViewerPanel = React.memo(
       const remainingWidth = termWidth - savedWidth;
       const responseStart = savedWidth + Math.floor(remainingWidth / 2);
 
-      if (x >= responseStart && !focused) {
-        setFocus("response");
+      const withinX = x >= responseStart;
+      const withinY = y >= yOffset && y < yOffset + height;
+
+      if (withinX && withinY) {
+        setFocus("response"); // allow selecting even if already focused or empty
       }
     });
 
@@ -126,6 +130,10 @@ export const ResponseViewerPanel = React.memo(
           return;
         }
 
+        if (key.leftArrow) {
+          setFocus("editor");
+          return;
+        }
         if (input === "c" && response) {
           // Copy response body
           const textToCopy = isVerbose ? formatRawResponse(response) : response.body;

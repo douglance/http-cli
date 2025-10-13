@@ -208,16 +208,19 @@ export function App({ requestsFilePath }: AppProps = {}) {
           focused={focusedPanel === "collections"}
           height={contentHeight}
           yOffset={errorBannerHeight}
+          xOffset={0}
         />
         <RequestEditorPanel
           focused={focusedPanel === "editor"}
           isVerbose={isVerbose}
           height={contentHeight}
+          yOffset={errorBannerHeight}
         />
         <ResponseViewerPanel
           focused={focusedPanel === "response"}
           isVerbose={isVerbose}
           height={contentHeight}
+          yOffset={errorBannerHeight}
         />
       </Box>
       <StatusBar focusedPanel={focusedPanel} isVerbose={isVerbose} filePath={filePath} />

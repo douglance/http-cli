@@ -15,6 +15,7 @@ interface RequestEditorPanelProps {
   focused: boolean;
   isVerbose: boolean;
   height: number;
+  yOffset?: number; // absolute top y of this panel
 }
 
 // Helper to get effective headers (user's or defaults)
@@ -31,7 +32,7 @@ const getEffectiveHeaders = (headers: Record<string, string>): Record<string, st
 };
 
 export const RequestEditorPanel = React.memo(
-  function RequestEditorPanel({ focused, isVerbose, height }: RequestEditorPanelProps) {
+  function RequestEditorPanel({ focused, isVerbose, height, yOffset = 0 }: RequestEditorPanelProps) {
     // Data only
     const { requests, selectedRequestId } = useSavedRequestsStore(
       useShallow((s) => ({
@@ -90,7 +91,7 @@ export const RequestEditorPanel = React.memo(
 
     // Mouse click to focus
     useMouse((event) => {
-      const { x, leftClick } = event;
+      const { x, y, leftClick } = event;
 
       if (!leftClick || !stdout) {
         return;
@@ -103,8 +104,11 @@ export const RequestEditorPanel = React.memo(
       const editorStart = savedWidth;
       const editorEnd = savedWidth + Math.floor(remainingWidth / 2);
 
-      if (x >= editorStart && x < editorEnd && !focused) {
-        setFocus("editor");
+      const withinX = x >= editorStart && x < editorEnd;
+      const withinY = y >= yOffset && y < yOffset + height;
+
+      if (withinX && withinY) {
+        setFocus("editor"); // allow selecting even if already focused or empty
       }
     });
 

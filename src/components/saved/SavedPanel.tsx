@@ -12,12 +12,13 @@ interface SavedPanelProps {
   focused: boolean;
   height: number;
   yOffset?: number;
+  xOffset?: number; // absolute left X of this panel (cols)
 }
 
 type FocusArea = "requests" | "env";
 
 export const SavedPanel = React.memo(
-  function SavedPanel({ width, focused, height, yOffset = 1 }: SavedPanelProps) {
+  function SavedPanel({ width, focused, height, yOffset = 1, xOffset = 0 }: SavedPanelProps) {
     // Data only (primitive types and arrays for shallow comparison)
     const { selectedRequestId, requests, folders } = useSavedRequestsStore(
       useShallow((s) => ({
@@ -94,6 +95,10 @@ export const SavedPanel = React.memo(
       }
     }, [cursor, scrollOffset, visibleHeight]);
 
+    // Precompute slice used by mouse hit-testing so handler sees consistent view
+    const visibleNodes = treeNodes.slice(scrollOffset, scrollOffset + visibleHeight);
+    // ----------------
+
     useInput(
       (input, key) => {
         if (!focused) {
@@ -138,15 +143,44 @@ export const SavedPanel = React.memo(
       { isActive: focused }
     );
 
+    // Helper: compute horizontal hit bounds for a rendered line
+    // We approximate terminal cell widths (monospace). Emojis may be double-width;
+    // we bias bounds slightly wide to be user-friendly but still avoid the far-right whitespace.
+    const lineBounds = (node: typeof treeNodes[number]) => {
+      // Left interior after border + paddingX=1
+      // Border adds 1 col; header box uses paddingX=1; list content also uses paddingX=1.
+      const borderLeft = 1;
+      const paddingX = 1;
+      const indent = node.type === "folder" ? node.depth * 2 : node.depth * 2;
+      const startX = borderLeft + paddingX + indent; // relative to panel left
+
+      if (node.type === "folder") {
+        // "▼ " or "▶ " + "📁 " + folder name
+        const glyphs = 2 /* triangle+space */ + 2 /* folder emoji approx */ + 1 /* space */;
+        const textLen = node.folder.name.length;
+        const endX = startX + glyphs + textLen;
+        return { startX, endX };
+      } else {
+        // Request row layout:
+        // [indicator/method column width 8] + space + request name
+        const methodCol = 8; // matches <Box width={8}>
+        const spacer = 1;
+        const textLen = node.request.name.length;
+        const endX = startX + methodCol + spacer + textLen;
+        return { startX, endX };
+      }
+    };
+
     // Mouse event handling
     useMouse((event) => {
-      const { y, scrollDown, scrollUp, leftClick, button } = event;
+      const { x, y, scrollDown, scrollUp, leftClick, button } = event;
 
-      // Convert absolute screen Y to component-relative Y
+      // Convert absolute screen coordinates to component-relative
       const relativeY = y - yOffset;
+      const relativeX = x - xOffset;
 
-      // Ignore clicks outside this component
-      if (relativeY < 0 || relativeY >= height) {
+      // Ignore clicks outside this component's overall bounds
+      if (relativeX < 0 || relativeX >= width || relativeY < 0 || relativeY >= height) {
         return;
       }
 
@@ -193,30 +227,38 @@ export const SavedPanel = React.memo(
             const clickedIndex = scrollOffset + clickedLineIndex;
             const node = treeNodes[clickedIndex];
 
-            if (node) {
-              // Double-click detection (within 300ms)
-              const now = Date.now();
-              const isDoubleClick = now - lastClickTime < 300 && clickedIndex === lastClickedIndex;
-
-              if (isDoubleClick) {
-                // Double-click: activate item (toggle folder or select request and switch to editor)
-                if (node.type === "folder") {
-                  toggleFolder(node.folder.id);
-                } else {
-                  selectRequest(node.request.id);
-                  setFocus("editor");
-                }
-              } else {
-                // Single click: just select the item
-                setCursor(clickedIndex);
-                if (node.type === "request") {
-                  selectRequest(node.request.id);
-                }
-              }
-
-              setLastClickTime(now);
-              setLastClickedIndex(clickedIndex);
+            if (!node) {
+              return;
             }
+
+            // Check if click is within the actual text bounds (not whitespace)
+            const { startX, endX } = lineBounds(node);
+            if (relativeX < startX || relativeX > endX) {
+              return;
+            }
+
+            // Double-click detection (within 300ms)
+            const now = Date.now();
+            const isDoubleClick = now - lastClickTime < 300 && clickedIndex === lastClickedIndex;
+
+            if (isDoubleClick) {
+              // Double-click: activate item (toggle folder or select request and switch to editor)
+              if (node.type === "folder") {
+                toggleFolder(node.folder.id);
+              } else {
+                selectRequest(node.request.id);
+                setFocus("editor");
+              }
+            } else {
+              // Single click: just select the item
+              setCursor(clickedIndex);
+              if (node.type === "request") {
+                selectRequest(node.request.id);
+              }
+            }
+
+            setLastClickTime(now);
+            setLastClickedIndex(clickedIndex);
           }
         }
       } else {
@@ -226,8 +268,6 @@ export const SavedPanel = React.memo(
         }
       }
     });
-
-    const visibleNodes = treeNodes.slice(scrollOffset, scrollOffset + visibleHeight);
 
     const maxScroll = Math.max(0, treeNodes.length - visibleHeight);
     const hasContentAbove = scrollOffset > 0;

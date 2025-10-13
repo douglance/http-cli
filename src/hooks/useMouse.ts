@@ -55,13 +55,16 @@ export function useMouse(handler: MouseHandler): void {
 
         // Parse button and modifiers
         const btn = button & 3;
+        // Modifiers in SGR: 4 = Shift, 8 = Meta, 16 = Ctrl
         const ctrl = !!(button & 16);
         const shift = !!(button & 4);
         const meta = !!(button & 8);
 
-        // Scroll events
-        const scrollUp = button === 64;
-        const scrollDown = button === 65;
+        // Normalize wheel codes to be robust to modifier bits:
+        // Base codes: 64 = wheel up, 65 = wheel down
+        const baseButton = button & ~(4 | 8 | 16); // mask out Shift/Meta/Ctrl bits
+        const scrollUp = baseButton === 64;
+        const scrollDown = baseButton === 65;
         const isScroll = scrollUp || scrollDown;
 
         let buttonName: "left" | "right" | "middle" | "none" = "none";

@@ -51,6 +51,12 @@ export const EnvSelector = React.memo(
       return Math.max(0, Math.min(idealOffset, maxOffset));
     }, [selectedEnvIndex, envFiles.length, visibleHeight]);
 
+    // Precompute visible range & markers so mouse math is consistent
+    const visibleEnvs = envFiles.slice(scrollOffset, scrollOffset + visibleHeight);
+    const hasMore = scrollOffset + visibleHeight < envFiles.length;
+    const hasPrevious = scrollOffset > 0;
+    // ----------------
+
     useInput(
       (_input, key) => {
         if (!focused) {
@@ -102,7 +108,7 @@ export const EnvSelector = React.memo(
         const relativeY = y - absoluteStartY;
 
         // Account for: border (1), header (1), hasPrevious indicator (1 if shown)
-        const itemsStartOffset = hasPrevious ? 3 : 2;
+        const itemsStartOffset = (hasPrevious ? 3 : 2);
         const clickedLineIndex = relativeY - itemsStartOffset;
 
         // Check if click is within visible items range
@@ -127,10 +133,6 @@ export const EnvSelector = React.memo(
         }
       }
     });
-
-    const visibleEnvs = envFiles.slice(scrollOffset, scrollOffset + visibleHeight);
-    const hasMore = scrollOffset + visibleHeight < envFiles.length;
-    const hasPrevious = scrollOffset > 0;
 
     return (
       <Box
