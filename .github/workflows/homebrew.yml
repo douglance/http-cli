@@ -1,0 +1,98 @@
+name: Update Homebrew Formula
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 0.1.0)'
+        required: true
+        default: '0.1.0'
+
+permissions:
+  contents: write
+
+jobs:
+  update-formula:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout http-cli repo
+        uses: actions/checkout@v4
+
+      - name: Download release binaries
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+          # Download binaries
+          curl -LO https://github.com/douglance/http-cli/releases/download/v${VERSION}/http-macos-x64
+          curl -LO https://github.com/douglance/http-cli/releases/download/v${VERSION}/http-macos-arm64
+          curl -LO https://github.com/douglance/http-cli/releases/download/v${VERSION}/http-linux-x64
+
+          # Calculate SHA256 hashes
+          echo "MACOS_X64_SHA256=$(shasum -a 256 http-macos-x64 | cut -d' ' -f1)" >> $GITHUB_ENV
+          echo "MACOS_ARM64_SHA256=$(shasum -a 256 http-macos-arm64 | cut -d' ' -f1)" >> $GITHUB_ENV
+          echo "LINUX_X64_SHA256=$(shasum -a 256 http-linux-x64 | cut -d' ' -f1)" >> $GITHUB_ENV
+
+      - name: Update formula
+        run: |
+          cat > Formula/http.rb << 'EOF'
+          class Http < Formula
+            desc "Fast, secure HTTP client for .http/.rest files"
+            homepage "https://github.com/douglance/http-cli"
+            version "${{ env.VERSION }}"
+            license "MIT"
+
+            on_macos do
+              if Hardware::CPU.arm?
+                url "https://github.com/douglance/http-cli/releases/download/v${{ env.VERSION }}/http-macos-arm64"
+                sha256 "${{ env.MACOS_ARM64_SHA256 }}"
+              else
+                url "https://github.com/douglance/http-cli/releases/download/v${{ env.VERSION }}/http-macos-x64"
+                sha256 "${{ env.MACOS_X64_SHA256 }}"
+              end
+            end
+
+            on_linux do
+              url "https://github.com/douglance/http-cli/releases/download/v${{ env.VERSION }}/http-linux-x64"
+              sha256 "${{ env.LINUX_X64_SHA256 }}"
+            end
+
+            def install
+              bin.install Dir["http*"].first => "http"
+            end
+
+            test do
+              output = shell_output("#{bin}/http --help")
+              assert_match "http", output
+            end
+          end
+          EOF
+
+      - name: Create/Update homebrew-tap repository
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Clone or create tap repo
+          if gh repo view douglance/homebrew-http 2>/dev/null; then
+            git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/douglance/homebrew-http.git tap
+          else
+            gh repo create douglance/homebrew-http --public --description "Homebrew tap for http CLI"
+            git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/douglance/homebrew-http.git tap
+          fi
+
+          cd tap
+          mkdir -p Formula
+          cp ../Formula/http.rb Formula/
+
+          git add Formula/http.rb
+          git commit -m "Update http to v${{ env.VERSION }}" || echo "No changes to commit"
+          git push origin main || git push origin master
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
