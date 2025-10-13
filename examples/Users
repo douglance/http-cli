@@ -1,12 +1,12 @@
-### Get Users
+### get-users
 GET https://jsonplaceholder.typicode.com/users
 Accept: application/json
 
-### Get Single Post
+### get-single-post
 GET https://jsonplaceholder.typicode.com/posts/1
 Accept: application/json
 
-### Create Post
+### create-post
 POST https://jsonplaceholder.typicode.com/posts
 Content-Type: application/json
 Accept: application/json
@@ -17,12 +17,12 @@ Accept: application/json
   "userId": 1
 }
 
-### HTTPBin GET
+### httpbin-get
 GET https://httpbin.org/get?test=value
 Accept: application/json
 User-Agent: HTTP-Inspector/1.0
 
-### HTTPBin POST
+### httpbin-post
 POST https://httpbin.org/post
 Content-Type: application/json
 Accept: application/json
@@ -32,7 +32,7 @@ Accept: application/json
   "timestamp": "2025-10-12T21:34:06.138Z"
 }
 
-### ENV Vars Test
+### env-vars-test
 POST {{API_BASE_URL}}/users/{{USER_ID}}
 Content-Type: {{CONTENT_TYPE}}
 Authorization: Bearer {{AUTH_TOKEN}}
