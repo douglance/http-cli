@@ -20,11 +20,11 @@ class HttpCli < Formula
   end
 
   def install
-    bin.install Dir["http*"].first => "http-cli"
+    bin.install Dir["http*"].first => "http"
   end
 
   test do
-    output = shell_output("#{bin}/http-cli --help")
+    output = shell_output("#{bin}/http --help")
     assert_match "http", output
   end
 end

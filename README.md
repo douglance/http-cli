@@ -45,7 +45,7 @@ chmod +x http-*
 mv http-* /usr/local/bin/http
 
 # Verify installation
-http-cli --help
+http --help
 ```
 
 ## 🚀 Quick Start
