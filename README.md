@@ -21,8 +21,7 @@ Fast, secure HTTP client for `.http` and `.rest` files with variable resolution 
 ### Homebrew (macOS/Linux)
 
 ```bash
-brew tap douglance/http
-brew install http
+brew install https://raw.githubusercontent.com/douglance/http-cli/main/Formula/http.rb
 ```
 
 ### npm
