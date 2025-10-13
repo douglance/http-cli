@@ -1,0 +1,45 @@
+### Get Users
+GET https://jsonplaceholder.typicode.com/users
+Accept: application/json
+
+### Get Single Post
+GET https://jsonplaceholder.typicode.com/posts/1
+Accept: application/json
+
+### Create Post
+POST https://jsonplaceholder.typicode.com/posts
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Test Post",
+  "body": "This is a test post",
+  "userId": 1
+}
+
+### HTTPBin GET
+GET https://httpbin.org/get?test=value
+Accept: application/json
+User-Agent: HTTP-Inspector/1.0
+
+### HTTPBin POST
+POST https://httpbin.org/post
+Content-Type: application/json
+Accept: application/json
+
+{
+  "message": "Hello from HTTP Inspector",
+  "timestamp": "2025-10-12T21:34:06.138Z"
+}
+
+### ENV Vars Test
+POST {{API_BASE_URL}}/users/{{USER_ID}}
+Content-Type: {{CONTENT_TYPE}}
+Authorization: Bearer {{AUTH_TOKEN}}
+User-Agent: {{USER_AGENT}}
+
+{
+  "apiKey": "{{API_KEY}}",
+  "secret": "{{API_SECRET}}",
+  "userId": "{{USER_ID}}"
+}
