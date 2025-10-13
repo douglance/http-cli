@@ -52,7 +52,7 @@ http --help
 
 Create an `api.http` file:
 
-```http
+```
 ### get-user
 GET https://jsonplaceholder.typicode.com/users/1
 
@@ -84,7 +84,7 @@ http create-post -f api.http
 
 ### Basic Requests
 
-```http
+```
 ### Simple GET
 GET https://api.example.com/users
 
@@ -115,7 +115,7 @@ API_KEY=your-api-key
 
 Use variables in requests:
 
-```http
+```
 ### Get user with variables
 GET {{BASE_URL}}/users/{{USER_ID}}
 Authorization: Bearer {{API_KEY}}
@@ -139,7 +139,7 @@ Content-Type: application/json
 
 API keys, tokens, and passwords are automatically redacted in output:
 
-```http
+```
 ### Auth example
 GET https://api.example.com/users
 Authorization: Bearer sk-test-1234567890
@@ -167,7 +167,7 @@ Query parameters are also redacted:
 
 Binary content (images, PDFs, etc.) is automatically detected and base64-encoded:
 
-```http
+```
 ### Download image
 GET https://httpbin.org/image/png
 ```
