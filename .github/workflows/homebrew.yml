@@ -74,25 +74,32 @@ jobs:
           end
           EOF
 
-      - name: Create/Update homebrew-tap repository
+      - name: Update homebrew-tap repository
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Clone or create tap repo
-          if gh repo view douglance/homebrew-http 2>/dev/null; then
-            git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/douglance/homebrew-http.git tap
-          else
-            gh repo create douglance/homebrew-http --public --description "Homebrew tap for http CLI"
-            git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/douglance/homebrew-http.git tap
-          fi
+          # Clone tap repo
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/douglance/homebrew-http.git tap
 
           cd tap
+
+          # Initialize repo if needed
+          if [ ! -f README.md ]; then
+            echo "# Homebrew Tap for http CLI" > README.md
+            echo "" >> README.md
+            echo "## Installation" >> README.md
+            echo '```bash' >> README.md
+            echo "brew tap douglance/http" >> README.md
+            echo "brew install http" >> README.md
+            echo '```' >> README.md
+            git add README.md
+            git commit -m "Initialize tap" || true
+          fi
+
           mkdir -p Formula
           cp ../Formula/http.rb Formula/
 
           git add Formula/http.rb
           git commit -m "Update http to v${{ env.VERSION }}" || echo "No changes to commit"
-          git push origin main || git push origin master
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git push origin main 2>/dev/null || git push origin master
