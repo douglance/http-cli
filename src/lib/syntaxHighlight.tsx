@@ -31,116 +31,131 @@ export function highlightJSON(json: string): React.ReactNode[] {
   const result: React.ReactNode[] = [];
   let key = 0;
 
-  // First check for environment variables
+  // Enhanced regex for better JSON tokenization
+  // Captures: strings (with escapes), numbers (int/float/exp), keywords, punctuation, whitespace
+  const jsonRegex =
+    /("(?:[^"\\]|\\(?:["\\/bfnrt]|u[0-9a-fA-F]{4}))*")|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|(\btrue\b|\bfalse\b|\bnull\b)|([:,[\]{}])|(\s+)/g;
+
+  let match: RegExpExecArray | null;
+  let lastIndex = 0;
+
+  // Process environment variables first
   if (json.includes("{{")) {
-    const envParts = json.split(/(\{\{[^}]+\}\})/g);
-    envParts.forEach((envPart) => {
-      if (!envPart) {
-        return;
-      }
+    const envRegex = /(\{\{[^}]+\}\})/g;
+    const envMatch = json.match(envRegex);
+    if (envMatch) {
+      // Mixed content with env vars - split and process
+      const parts = json.split(envRegex);
+      parts.forEach((part) => {
+        if (!part) return;
 
-      if (envPart.match(/^\{\{[^}]+\}\}$/)) {
-        result.push(
-          <Text key={key++} color="yellow" bold>
-            {envPart}
-          </Text>
-        );
-        return;
-      }
-
-      // Simple JSON syntax highlighting
-      const parts = envPart.split(
-        /("(?:[^"\\]|\\.)*")|(\d+\.?\d*)|(\btrue\b|\bfalse\b|\bnull\b)|([:,[\]{}])/g
-      );
-
-      parts.forEach((part, idx) => {
-        if (!part) {
-          return;
-        }
-
-        if (part.match(/^".*"$/)) {
-          // String (could be key or value)
-          const isKey = idx > 0 && parts[idx + 1] === ":";
+        if (part.match(/^\{\{[^}]+\}\}$/)) {
+          // Environment variable
           result.push(
-            <Text key={key++} color={isKey ? "cyan" : "green"}>
-              {part}
-            </Text>
-          );
-        } else if (part.match(/^\d+\.?\d*$/)) {
-          // Number
-          result.push(
-            <Text key={key++} color="yellow">
-              {part}
-            </Text>
-          );
-        } else if (part.match(/^(true|false|null)$/)) {
-          // Boolean/null
-          result.push(
-            <Text key={key++} color="magenta">
-              {part}
-            </Text>
-          );
-        } else if (part.match(/^[:,[\]{}]$/)) {
-          // Punctuation
-          result.push(
-            <Text key={key++} dimColor>
+            <Text key={key++} color="yellow" bold>
               {part}
             </Text>
           );
         } else {
-          // Plain text (whitespace, etc)
-          result.push(<Text key={key++}>{part}</Text>);
+          // Regular JSON - recursively highlight
+          const highlighted = highlightJSONPart(part);
+          result.push(...highlighted.map((node, idx) => <Text key={key++ + idx}>{node}</Text>));
         }
       });
-    });
-
-    return result;
+      return result;
+    }
   }
 
-  // Simple JSON syntax highlighting (no env vars)
-  const parts = json.split(
-    /("(?:[^"\\]|\\.)*")|(\d+\.?\d*)|(\btrue\b|\bfalse\b|\bnull\b)|([:,[\]{}])/g
-  );
-
-  parts.forEach((part, idx) => {
-    if (!part) {
-      return;
+  // Regular JSON highlighting
+  while ((match = jsonRegex.exec(json)) !== null) {
+    // Add any text before this match (shouldn't happen in valid JSON)
+    if (match.index > lastIndex) {
+      const plainText = json.substring(lastIndex, match.index);
+      result.push(<Text key={key++}>{plainText}</Text>);
     }
 
-    if (part.match(/^".*"$/)) {
-      // String (could be key or value)
-      const isKey = idx > 0 && parts[idx + 1] === ":";
+    const [fullMatch, string, number, keyword, punctuation, whitespace] = match;
+
+    if (string) {
+      // Check if this string is a key (followed by colon)
+      const afterString = json.substring(match.index + string.length).trim();
+      const isKey = afterString.startsWith(":");
       result.push(
         <Text key={key++} color={isKey ? "cyan" : "green"}>
-          {part}
+          {string}
         </Text>
       );
-    } else if (part.match(/^\d+\.?\d*$/)) {
-      // Number
+    } else if (number) {
       result.push(
         <Text key={key++} color="yellow">
-          {part}
+          {number}
         </Text>
       );
-    } else if (part.match(/^(true|false|null)$/)) {
-      // Boolean/null
+    } else if (keyword) {
       result.push(
         <Text key={key++} color="magenta">
-          {part}
+          {keyword}
         </Text>
       );
-    } else if (part.match(/^[:,[\]{}]$/)) {
-      // Punctuation
+    } else if (punctuation) {
       result.push(
         <Text key={key++} dimColor>
-          {part}
+          {punctuation}
         </Text>
       );
-    } else {
-      // Plain text (whitespace, etc)
-      result.push(<Text key={key++}>{part}</Text>);
+    } else if (whitespace) {
+      result.push(<Text key={key++}>{whitespace}</Text>);
     }
-  });
+
+    lastIndex = match.index + fullMatch.length;
+  }
+
+  // Add any remaining text
+  if (lastIndex < json.length) {
+    result.push(<Text key={key++}>{json.substring(lastIndex)}</Text>);
+  }
+
+  return result;
+}
+
+// Helper function for highlighting JSON parts
+function highlightJSONPart(jsonPart: string): React.ReactNode[] {
+  const result: React.ReactNode[] = [];
+  const jsonRegex =
+    /("(?:[^"\\]|\\(?:["\\/bfnrt]|u[0-9a-fA-F]{4}))*")|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|(\btrue\b|\bfalse\b|\bnull\b)|([:,[\]{}])|(\s+)/g;
+
+  let match: RegExpExecArray | null;
+  let lastIndex = 0;
+
+  while ((match = jsonRegex.exec(jsonPart)) !== null) {
+    if (match.index > lastIndex) {
+      result.push(jsonPart.substring(lastIndex, match.index));
+    }
+
+    const [fullMatch, string, number, keyword, punctuation, whitespace] = match;
+
+    if (string) {
+      const afterString = jsonPart.substring(match.index + string.length).trim();
+      const isKey = afterString.startsWith(":");
+      result.push(
+        <Text color={isKey ? "cyan" : "green"}>{string}</Text>
+      );
+    } else if (number) {
+      result.push(<Text color="yellow">{number}</Text>);
+    } else if (keyword) {
+      result.push(<Text color="magenta">{keyword}</Text>);
+    } else if (punctuation) {
+      result.push(<Text dimColor>{punctuation}</Text>);
+    } else if (whitespace) {
+      result.push(whitespace);
+    }
+
+    lastIndex = match.index + fullMatch.length;
+  }
+
+  if (lastIndex < jsonPart.length) {
+    result.push(jsonPart.substring(lastIndex));
+  }
 
   return result;
 }

@@ -16,6 +16,13 @@ export interface MouseEvent {
 
 type MouseHandler = (event: MouseEvent) => void;
 
+// Global flag to disable mouse handling (e.g., for text selection mode)
+let mouseDisabled = false;
+
+export function setMouseDisabled(disabled: boolean): void {
+  mouseDisabled = disabled;
+}
+
 /**
  * Custom hook for mouse event handling in Ink applications
  * Enables mouse tracking via ANSI escape sequences
@@ -35,6 +42,11 @@ export function useMouse(handler: MouseHandler): void {
     }
 
     const handleData = (data: Buffer) => {
+      // Skip mouse handling if globally disabled
+      if (mouseDisabled) {
+        return;
+      }
+
       const str = data.toString();
 
       // Parse SGR mouse events (CSI < Cb ; Cx ; Cy M/m)
@@ -95,11 +107,11 @@ export function useMouse(handler: MouseHandler): void {
 
     // Enable mouse tracking
     // CSI ? 1000 h = Enable mouse click tracking
-    // CSI ? 1002 h = Enable mouse drag tracking
+    // CSI ? 1002 h = Enable mouse drag tracking (DISABLED - interferes with text selection)
     // CSI ? 1003 h = Enable all mouse motion tracking
     // CSI ? 1006 h = Enable SGR extended mouse mode
     process.stdout.write("\x1b[?1000h"); // Click tracking
-    process.stdout.write("\x1b[?1002h"); // Drag tracking
+    // process.stdout.write("\x1b[?1002h"); // Drag tracking - DISABLED for text selection
     process.stdout.write("\x1b[?1006h"); // SGR mode
 
     setRawMode(true);
@@ -110,7 +122,7 @@ export function useMouse(handler: MouseHandler): void {
 
       // Disable mouse tracking
       process.stdout.write("\x1b[?1000l");
-      process.stdout.write("\x1b[?1002l");
+      // process.stdout.write("\x1b[?1002l"); // Drag tracking - DISABLED for text selection
       process.stdout.write("\x1b[?1006l");
     };
   }, [stdin, setRawMode, isRawModeSupported]);

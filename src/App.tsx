@@ -35,7 +35,6 @@ export function App({ requestsFilePath }: AppProps = {}) {
 
   const { isLoaded, initialLoadError, reloadError, filePath } = useStorage(requestsFilePath);
   const isLoading = useRequestStore((s) => s.isLoading);
-  const [showQuitConfirm, setShowQuitConfirm] = useState(false);
   const [showEnvInspector, setShowEnvInspector] = useState(false);
   const { stdout } = useStdout();
   const { stdin } = useStdin();
@@ -49,7 +48,6 @@ export function App({ requestsFilePath }: AppProps = {}) {
     isVerbose,
     isLoading,
     terminalHeight,
-    showQuitConfirm,
     showEnvInspector,
     stdoutRef: stdout ? "present" : "null",
     stdinRef: stdin ? "present" : "null",
@@ -67,15 +65,6 @@ export function App({ requestsFilePath }: AppProps = {}) {
 
   // Global key bindings
   useInput((input, key) => {
-    if (showQuitConfirm) {
-      if (input === "y" || input === "Y") {
-        process.exit(0);
-      } else if (input === "n" || input === "N" || key.escape) {
-        setShowQuitConfirm(false);
-      }
-      return;
-    }
-
     // Prevent navigation while request is in flight
     if (isLoading && (key.tab || input === "h" || input === "l")) {
       return;
@@ -93,50 +82,10 @@ export function App({ requestsFilePath }: AppProps = {}) {
       setShowEnvInspector(true);
     } else if (input === "v") {
       toggleVerbose();
-    } else if (input === "q") {
-      setShowQuitConfirm(true);
-    } else if (key.ctrl && input === "c") {
+    } else if (input === "q" || (key.ctrl && input === "c")) {
       process.exit(0);
     }
   });
-
-  if (showQuitConfirm) {
-    return (
-      <Box flexDirection="column">
-        <Box flexGrow={1} justifyContent="center" alignItems="center">
-          <Box
-            flexDirection="column"
-            borderStyle="single"
-            borderColor="yellow"
-            paddingX={3}
-            paddingY={1}
-            width={50}
-          >
-            <Text bold color="yellow">
-              Quit Confirmation
-            </Text>
-            <Box marginTop={1}>
-              <Text dimColor>Are you sure you want to quit?</Text>
-            </Box>
-            <Box marginTop={1} gap={2}>
-              <Text>
-                <Text color="cyan" bold>
-                  [Y]
-                </Text>
-                <Text dimColor> Yes</Text>
-              </Text>
-              <Text>
-                <Text color="cyan" bold>
-                  [N]
-                </Text>
-                <Text dimColor> No</Text>
-              </Text>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
-    );
-  }
 
   // Show loading state or initial load error
   if (!isLoaded || initialLoadError) {
@@ -175,7 +124,7 @@ export function App({ requestsFilePath }: AppProps = {}) {
               <Text dimColor>Fix the error and save the file to reload automatically.</Text>
             </Box>
             <Box marginTop={1} paddingX={1}>
-              <Text dimColor>Press Ctrl+C to quit</Text>
+              <Text dimColor>Press q or Ctrl+C to quit</Text>
             </Box>
           </Box>
         )}

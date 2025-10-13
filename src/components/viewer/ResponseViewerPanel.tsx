@@ -4,7 +4,7 @@ import { Box, Text, useInput, useStdin, useStdout } from "ink";
 import React from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useFocusManager } from "../../hooks/useFocusManager.js";
-import { useMouse } from "../../hooks/useMouse.js";
+import { setMouseDisabled, useMouse } from "../../hooks/useMouse.js";
 import { highlightHTTP, highlightJSON } from "../../lib/syntaxHighlight.js";
 import { useRequestStore } from "../../stores/requestStore.js";
 import { generateLineKey } from "../../utils/stableId.js";
@@ -30,6 +30,7 @@ export const ResponseViewerPanel = React.memo(
     const { setFocus } = useFocusManager();
     const [scrollOffset, setScrollOffset] = React.useState(0);
     const [copyStatus, setCopyStatus] = React.useState<string>("");
+    const [selectionMode, setSelectionMode] = React.useState(false);
     const prevResponseRef = React.useRef(response);
     const { stdin, setRawMode } = useStdin();
     const { stdout } = useStdout();
@@ -40,6 +41,15 @@ export const ResponseViewerPanel = React.memo(
         prevResponseRef.current = response;
       }
     }, [response]);
+
+    // Update global mouse disabled state based on selection mode
+    React.useEffect(() => {
+      if (focused && selectionMode) {
+        setMouseDisabled(true);
+      } else if (!selectionMode) {
+        setMouseDisabled(false);
+      }
+    }, [focused, selectionMode]);
 
     React.useEffect(() => {
       if (!stdin || !setRawMode) {
@@ -134,7 +144,14 @@ export const ResponseViewerPanel = React.memo(
           setFocus("editor");
           return;
         }
-        if (input === "c" && response) {
+        if (input === "s") {
+          // Toggle selection mode
+          setSelectionMode((prev) => !prev);
+          setCopyStatus(selectionMode ? "" : "Selection mode ON - mouse disabled");
+          if (!selectionMode) {
+            setTimeout(() => setCopyStatus(""), 2000);
+          }
+        } else if (input === "c" && response) {
           // Copy response body
           const textToCopy = isVerbose ? formatRawResponse(response) : response.body;
           copyToClipboard(textToCopy);
@@ -322,21 +339,40 @@ export const ResponseViewerPanel = React.memo(
           lines.push(<Text key={generateLineKey(line, idx)}>{highlightHTTP(line)}</Text>);
         });
       } else {
-        // Normal mode - show just body
+        // Normal mode - show just body with proper text selection support
         if (isJSON(response.body)) {
           try {
-            const formatted = JSON.stringify(JSON.parse(response.body), null, 2);
-            formatted.split("\n").forEach((line, idx) => {
-              lines.push(<Text key={generateLineKey(line, idx)}>{highlightJSON(line)}</Text>);
+            // Format JSON and render as selectable text blocks
+            const parsed = JSON.parse(response.body);
+            const formatted = JSON.stringify(parsed, null, 2);
+
+            // Render each line separately but preserve line structure for proper display
+            const jsonLines = formatted.split("\n");
+            jsonLines.forEach((line, idx) => {
+              lines.push(
+                <Text key={generateLineKey(line, idx)} wrap="truncate-end">
+                  {highlightJSON(line)}
+                </Text>
+              );
             });
           } catch {
+            // Invalid JSON - render as plain text
             response.body.split("\n").forEach((line, idx) => {
-              lines.push(<Text key={generateLineKey(line, idx)}>{line}</Text>);
+              lines.push(
+                <Text key={generateLineKey(line, idx)} wrap="wrap">
+                  {line}
+                </Text>
+              );
             });
           }
         } else {
+          // Non-JSON response - render as plain text with wrapping
           response.body.split("\n").forEach((line, idx) => {
-            lines.push(<Text key={generateLineKey(line, idx)}>{line}</Text>);
+            lines.push(
+              <Text key={generateLineKey(line, idx)} wrap="wrap">
+                {line}
+              </Text>
+            );
           });
         }
       }
@@ -377,6 +413,12 @@ export const ResponseViewerPanel = React.memo(
               </Text>
             )}
             {scrollIndicator && <Text dimColor> {scrollIndicator}</Text>}
+            {focused && response && !copyStatus && !selectionMode && (
+              <Text dimColor> • c=copy • s=selection mode</Text>
+            )}
+            {focused && selectionMode && (
+              <Text color="yellow"> SELECTION MODE • Press s to exit</Text>
+            )}
           </Box>
           {copyStatus && (
             <Text color={copyStatus.includes("✓") ? "green" : "red"}>{copyStatus}</Text>
@@ -388,5 +430,5 @@ export const ResponseViewerPanel = React.memo(
       </Box>
     );
   },
-  (p, n) => p.focused === n.focused && p.isVerbose === n.isVerbose && p.height === n.height
+  (p, n) => p.focused === n.focused && p.isVerbose === n.isVerbose && p.height === n.height && p.yOffset === n.yOffset
 );
