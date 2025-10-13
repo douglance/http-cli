@@ -47,8 +47,8 @@ curl -sL https://github.com/douglance/http-cli/archive/refs/tags/v1.0.0.tar.gz |
 
 ```bash
 # Create new tap repository
-mkdir homebrew-http-cli
-cd homebrew-http-cli
+mkdir homebrew-http
+cd homebrew-http
 git init
 
 # Create Formula directory
@@ -62,7 +62,7 @@ cp ../http-cli/Formula/http-cli.rb Formula/
 # Commit and push
 git add Formula/http-cli.rb
 git commit -m "Add http-cli formula"
-git remote add origin https://github.com/douglance/homebrew-http-cli.git
+git remote add origin https://github.com/douglance/homebrew-http.git
 git push -u origin main
 ```
 
@@ -70,7 +70,7 @@ git push -u origin main
 
 ```bash
 # Install from your tap (modern format - no tap needed)
-brew install douglance/http-cli/http-cli
+brew install douglance/http/http-cli
 
 # Test
 http --help
@@ -79,7 +79,7 @@ http --help
 ### Step 6: Users Install Via
 
 ```bash
-brew install douglance/http-cli/http-cli
+brew install douglance/http/http-cli
 ```
 
 ---
@@ -170,7 +170,7 @@ gh release create v1.1.0
 curl -sL https://github.com/douglance/http-cli/archive/refs/tags/v1.1.0.tar.gz | shasum -a 256
 
 # 4. Update formula
-cd homebrew-http-cli
+cd homebrew-http
 # Edit Formula/http-cli.rb:
 #   - Update version in URL
 #   - Update sha256
@@ -227,9 +227,9 @@ brew uninstall http-cli
 
 3. **Create Tap Repo**
    ```bash
-   # On GitHub, create: homebrew-http-cli
-   git clone https://github.com/douglance/homebrew-http-cli.git
-   cd homebrew-http-cli
+   # On GitHub, create: homebrew-http
+   git clone https://github.com/douglance/homebrew-http.git
+   cd homebrew-http
    mkdir Formula
    # Copy Formula/http-cli.rb and update SHA256
    git add Formula/http-cli.rb
@@ -239,14 +239,14 @@ brew uninstall http-cli
 
 4. **Install**
    ```bash
-   brew install douglance/http-cli/http-cli
+   brew install douglance/http/http-cli
    ```
 
 ---
 
 ## Promotion Path
 
-1. **Start**: Personal tap (`brew install douglance/http-cli/http-cli`)
+1. **Start**: Personal tap (`brew install douglance/http/http-cli`)
 2. **Grow**: Get stars, users, feedback
 3. **Mature**: After 30+ days and 50+ stars
 4. **Official**: Submit to homebrew-core (`brew install http-cli`)

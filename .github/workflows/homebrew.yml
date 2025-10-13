@@ -41,8 +41,8 @@ jobs:
 
       - name: Update formula
         run: |
-          cat > Formula/http.rb << 'EOF'
-          class Http < Formula
+          cat > Formula/http-cli.rb << 'EOF'
+          class HttpCli < Formula
             desc "Fast, secure HTTP client for .http/.rest files"
             homepage "https://github.com/douglance/http-cli"
             version "${{ env.VERSION }}"
@@ -91,17 +91,17 @@ jobs:
             echo "## Installation" >> README.md
             echo '```bash' >> README.md
             echo "brew tap douglance/http" >> README.md
-            echo "brew install http" >> README.md
+            echo "brew install http-cli" >> README.md
             echo '```' >> README.md
             git add README.md
             git commit -m "Initialize tap" || true
           fi
 
           mkdir -p Formula
-          cp ../Formula/http.rb Formula/
+          cp ../Formula/http-cli.rb Formula/
 
-          git add Formula/http.rb
-          if git commit -m "Update http to v${{ env.VERSION }}"; then
+          git add Formula/http-cli.rb
+          if git commit -m "Update http-cli to v${{ env.VERSION }}"; then
             git push origin main
           else
             echo "No changes to commit"

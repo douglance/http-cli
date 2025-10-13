@@ -22,7 +22,7 @@ Fast, secure HTTP client for `.http` and `.rest` files with variable resolution 
 
 ```bash
 brew tap douglance/http
-brew install http-cli
+brew install http-cli  # installs 'http' command
 ```
 
 ### npm
