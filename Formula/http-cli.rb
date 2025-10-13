@@ -1,5 +1,5 @@
 class HttpCli < Formula
-  desc "Fast, secure HTTP client for .http/.rest files"
+  desc "Simple, AI-friendly HTTP client for .http/.rest files"
   homepage "https://github.com/douglance/http-cli"
   version "0.1.0"
   license "MIT"

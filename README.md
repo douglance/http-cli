@@ -1,19 +1,19 @@
-# http - Fast HTTP Client for .http Files
+# http - Simple HTTP Client for .http Files
 
 [![CI](https://github.com/douglance/http-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/douglance/http-cli/actions/workflows/ci.yml)
 [![npm version](https://badge.fury.io/js/@douglance%2Fhttp.svg)](https://www.npmjs.com/package/@douglance/http)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Fast, secure HTTP client for `.http` and `.rest` files with variable resolution and sensitive data redaction. Compatible with VS Code REST Client and JetBrains HTTP Client formats.
+Simple, secure HTTP client for `.http` and `.rest` files. No bloat, just requests. AI-friendly CLI with JSON output. Compatible with VS Code REST Client and JetBrains HTTP Client formats.
 
 ## ✨ Features
 
+- 🤖 **AI-friendly CLI** - JSON output perfect for LLM tools and automation
 - 📝 **`.http` & `.rest` file support** - Compatible with popular IDE extensions
+- ⚡ **Simple single executable** - No dependencies, no configuration, just works
 - 🔐 **Automatic sensitive data redaction** - API keys, tokens, passwords redacted in output
 - 🌍 **Variable resolution** - `.env` files and shell environment variables
 - 📦 **Binary response handling** - Base64 encoding for images, PDFs, etc.
-- ⚡ **Fast single executable** - No dependencies, built with Bun
-- 🎯 **JSON output** - Perfect for CI/CD and scripting
 - 🧪 **Well tested** - 205 tests, 93% pass rate, strict TDD
 
 ## 📦 Installation

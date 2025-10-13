@@ -1,7 +1,7 @@
 {
   "name": "@douglance/http",
   "version": "0.1.0",
-  "description": "Fast, secure HTTP client for .http/.rest files with variable resolution and sensitive data redaction",
+  "description": "Simple, AI-friendly HTTP client for .http/.rest files. No bloat, just requests with JSON output.",
   "type": "module",
   "engines": {
     "node": ">=18"
@@ -37,8 +37,12 @@
     "client",
     "http-client",
     "rest-client",
-    "tui",
     "cli",
+    "ai",
+    "llm",
+    "automation",
+    "simple",
+    "json",
     "terminal",
     "postman",
     "insomnia"
